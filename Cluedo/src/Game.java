@@ -15,9 +15,7 @@ public class Game {
 	private int currentPlayerIndex = 0;
 	private Random randomGenerator = new Random();
 	private Board board;
-	private boolean rolledDice = false;
 	private List<Card> solutionEnvelope = new ArrayList<>();
-	private boolean suggestionMade;
 
 	/**
 	 * The initial game constructor that creates a board, asks how many players are in the game and
@@ -138,7 +136,7 @@ public class Game {
 	
 	
 	//The list of choices that are used in the turn method.
-	List<String> choicesList = new ArrayList<String>(){{
+	private List<String> choicesList = new ArrayList<String>(){{
 		add("Roll Dice");
 		add("Make a suggestion");
 		add("Make an accusation");
@@ -147,6 +145,7 @@ public class Game {
 	}};
 	/**
 	 * The Main turn method, from here the decisions are made and the game is run.
+	 * Recursively calls itself until the game is over.
 	 */
 	private void turn() {
 		String turnChoice = "";
@@ -169,14 +168,10 @@ public class Game {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if(turnChoice.equals("Roll Dice") && !rolledDice){			
+		if(turnChoice.equals("Roll Dice")){			
 			move();
-		}else if(turnChoice.equals("Roll Dice") && rolledDice){
-			System.out.println("You have already rolled, choose again");
-		}else if(turnChoice.equals("Make a suggestion") && !suggestionMade){
+		}else if(turnChoice.equals("Make a suggestion")){
 			suggestion();
-		}else if(turnChoice.equals("Make a suggestion") && suggestionMade){
-			System.out.println("You have already made a suggestion, choose again");
 		}else if(turnChoice.equals("Make an accusation")){
 			accusation();
 		}else if(turnChoice.equals("See hand")){
@@ -187,8 +182,6 @@ public class Game {
 			currentPlayerIndex++;
 			if(currentPlayerIndex == playerList.size())currentPlayerIndex = 0;
 			resetChoicesList();
-			rolledDice = false;
-			suggestionMade = false;
 		}else{
 			System.out.println("Not a valid entry");
 		}
@@ -206,7 +199,6 @@ public class Game {
 	}
 
 	private void move() {
-		rolledDice = true;
 		System.out.println("Rolling the dice...");
 		int dice = randomGenerator.nextInt(6)+1;
 		System.out.println("You rolled a "+dice);
@@ -248,7 +240,6 @@ public class Game {
 		String playerRoom = board.getRoom(playerList.get(currentPlayerIndex).getX(), playerList.get(currentPlayerIndex).getY());
 		if(playerRoom.equals("ground") || playerRoom.equals("door")){
 			System.out.println("You are not in a room, cannot make a suggestion");
-			suggestionMade = true;
 			return;
 		}
 		try {
@@ -303,13 +294,12 @@ public class Game {
 		if(!suggestion){
 			System.out.println("Your suggestion was not countered by any players");
 		}
-		suggestionMade = true;
 	}
 
 	private void accusation() {
 		Card room = null;
 		while(room == null){
-			System.out.println("What room?");
+			System.out.println("What room?sdfj");
 			System.out.print("> ");
 			//String text = input.readLine();
 			//if(text.equalsIgnoreCase("kitchen")||text.equalsIgnoreCase("ballroom")){
