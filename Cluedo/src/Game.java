@@ -65,24 +65,24 @@ public class Game {
 
 		}};
 		List<Card> roomsDeck = new ArrayList<Card>(){{
-			add(new Weapon("Kitchen"));
-			add(new Weapon("Ballroom"));
-			add(new Weapon("Conservatory"));
-			add(new Weapon("Dining Room"));
-			add(new Weapon("Billard Room"));
-			add(new Weapon("Library"));
-			add(new Weapon("Study"));
-			add(new Weapon("Hall"));
-			add(new Weapon("Lounge"));
+			add(new Room("Kitchen"));
+			add(new Room("Ballroom"));
+			add(new Room("Conservatory"));
+			add(new Room("Dining Room"));
+			add(new Room("Billard Room"));
+			add(new Room("Library"));
+			add(new Room("Study"));
+			add(new Room("Hall"));
+			add(new Room("Lounge"));
 
 		}};
 		List<Card> charactersDeck = new ArrayList<Card>(){{
-			add(new Weapon("Miss Scarlett"));
-			add(new Weapon("Colonel Mustard"));
-			add(new Weapon("Mrs. White"));
-			add(new Weapon("The Reverend Green"));
-			add(new Weapon("Mrs. Peacock"));
-			add(new Weapon("Professor Plum"));
+			add(new Character("Miss Scarlett"));
+			add(new Character("Colonel Mustard"));
+			add(new Character("Mrs. White"));
+			add(new Character("The Reverend Green"));
+			add(new Character("Mrs. Peacock"));
+			add(new Character("Professor Plum"));
 
 		}};
 
@@ -148,6 +148,7 @@ public class Game {
 	 * Recursively calls itself until the game is over.
 	 */
 	private void turn() {
+		boolean gameWon = false;
 		String turnChoice = "";
 		
 		//board.drawBoard(playerList);
@@ -173,7 +174,7 @@ public class Game {
 		}else if(turnChoice.equals("Make a suggestion")){
 			suggestion();
 		}else if(turnChoice.equals("Make an accusation")){
-			accusation();
+			gameWon = accusation();
 		}else if(turnChoice.equals("See hand")){
 			System.out.println("This is your hand");
 			showHand();
@@ -185,9 +186,14 @@ public class Game {
 		}else{
 			System.out.println("Not a valid entry");
 		}
-		turn();
+		if(!gameWon){
+			turn();
+		}
+		System.out.println("Game over");
 	}
-
+	/**
+	 * Simple method to reset the choices, this is called when the player ends their turn
+	 */
 	private void resetChoicesList() {
 		choicesList = new ArrayList<String>(){{
 			add("Roll Dice");
@@ -197,7 +203,11 @@ public class Game {
 			add("End Turn");
 		}};	
 	}
-
+	
+	/**
+	 * Rolls the dice and gives the player as many choices as was rolled on the dice
+	 * to move around the board. This is checked by the board and the player position.
+	 */
 	private void move() {
 		System.out.println("Rolling the dice...");
 		int dice = randomGenerator.nextInt(6)+1;
@@ -232,9 +242,12 @@ public class Game {
 				System.out.println();
 			}
 		}
-		turn();
 	}
-
+	
+	/**
+	 * Builds a suggestion from the players position on the board and the choices they make and 
+	 * then tests this against the hands of the other players.
+	 */
 	private void suggestion(){
 		List<Card> sug = new ArrayList<>();
 		String playerRoom = board.getRoom(playerList.get(currentPlayerIndex).getX(), playerList.get(currentPlayerIndex).getY());
@@ -253,7 +266,8 @@ public class Game {
 				System.out.println("What weapon?");
 				System.out.print("> ");
 				String text = input.readLine();
-				if(text.equalsIgnoreCase("candlestick")||text.equalsIgnoreCase("dagger")){
+				if(text.equalsIgnoreCase("candlestick")||text.equalsIgnoreCase("dagger")||text.equalsIgnoreCase("Lead Pipe")
+						||text.equalsIgnoreCase("Revolver")||text.equalsIgnoreCase("Rope")||text.equalsIgnoreCase("Spanner")){
 					weapon = new Weapon(text);
 					sug.add(weapon);
 				}else{
@@ -266,7 +280,8 @@ public class Game {
 				System.out.println("What character?");
 				System.out.print("> ");
 				String text = input.readLine();
-				if(text.equalsIgnoreCase("Miss Scarlett")||text.equalsIgnoreCase("Colonel Mustard")){
+				if(text.equalsIgnoreCase("Miss Scarlett")||text.equalsIgnoreCase("Colonel Mustard")||text.equalsIgnoreCase("Mrs. White")
+						||text.equalsIgnoreCase("The Reverend Green")||text.equalsIgnoreCase("Mrs. Peacock")||text.equalsIgnoreCase("Professor Plum")){
 					character = new Character(text);
 					sug.add(character);
 				}else{
@@ -278,39 +293,80 @@ public class Game {
 		} catch(IOException e) {
 			System.err.println("I/O Error - " + e.getMessage());
 		}
-		boolean suggestion = false;
 		for(Player p: playerList){
 			for(Card c: sug){
 				if(p.holding(c)){
-					if(!suggestion){
-						System.out.println("player "+(playerList.indexOf(p)+1)+" is holding the "+c);
-						suggestion = true;
-					}
-
-
+					System.out.println("player "+(playerList.indexOf(p)+1)+" is holding the "+c);
+					return;
 				}
 			}
 		}
-		if(!suggestion){
-			System.out.println("Your suggestion was not countered by any players");
+		System.out.println("Your suggestion was not countered by any players");
+	}
+	
+	/**
+	 * Builds an accusation from the players position  choices they make and 
+	 * then tests this against the envelope and returns whether they were correct
+	 * or not.
+	 */
+	private boolean accusation() {
+		List<Card> playerAccusation = new ArrayList<>();
+		try {
+			Card room = null;
+			while(room == null){
+				System.out.println("What room?");
+				System.out.print("> ");
+				String text;
+				text = input.readLine();
+				if(text.equalsIgnoreCase("kitchen")||text.equalsIgnoreCase("ballroom")||text.equalsIgnoreCase("conservatory")
+						||text.equalsIgnoreCase("billiard room")||text.equalsIgnoreCase("library")||text.equalsIgnoreCase("study")
+						||text.equalsIgnoreCase("hall")||text.equalsIgnoreCase("lounge")||text.equalsIgnoreCase("dining room")){
+					room = new Room(text.toLowerCase());
+					playerAccusation.add(room);
+				}else{
+					System.out.println("Not a valid room");
+					System.out.println();
+				}
+			}
+			Card weapon = null;
+			while(weapon == null){
+				System.out.println("What weapon?");
+				System.out.print("> ");
+				String text = input.readLine();
+				if(text.equalsIgnoreCase("candlestick")||text.equalsIgnoreCase("dagger")||text.equalsIgnoreCase("Lead Pipe")
+						||text.equalsIgnoreCase("Revolver")||text.equalsIgnoreCase("Rope")||text.equalsIgnoreCase("Spanner")){
+					weapon = new Weapon(text);
+					playerAccusation.add(weapon);
+				}else{
+					System.out.println("Not a valid weapon");
+					System.out.println();
+				}
+			}
+			Card character = null;
+			while(character == null){
+				System.out.println("What character?");
+				System.out.print("> ");
+				String text = input.readLine();
+				if(text.equalsIgnoreCase("Miss Scarlett")||text.equalsIgnoreCase("Colonel Mustard")||text.equalsIgnoreCase("Mrs. White")
+						||text.equalsIgnoreCase("The Reverend Green")||text.equalsIgnoreCase("Mrs. Peacock")||text.equalsIgnoreCase("Professor Plum")){
+					character = new Character(text);
+					playerAccusation.add(character);
+				}else{
+					System.out.println("Not a valid character");
+					System.out.println();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		for(Card c: playerAccusation){
+			if(!solutionEnvelope.contains(c)){
+				return false;
+			}
+		}
+		return true;
 	}
 
-	private void accusation() {
-		Card room = null;
-		while(room == null){
-			System.out.println("What room?sdfj");
-			System.out.print("> ");
-			//String text = input.readLine();
-			//if(text.equalsIgnoreCase("kitchen")||text.equalsIgnoreCase("ballroom")){
-			//	room = new Room(text.toLowerCase());
-				//sug.add(room);
-			//}else{
-				System.out.println("Not a valid room");
-				System.out.println();
-			//}
-		}
-	}
 
 	private void showHand() {
 		playerList.get(currentPlayerIndex).showHand();
