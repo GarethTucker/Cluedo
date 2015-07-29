@@ -27,17 +27,23 @@ public class Game {
 	 */
 	public Game(){
 		board = new Board();
-		board.drawBoard(playerList);
-		try {
-			System.out.println("How Many Players?");
-			System.out.print("> ");
-			String text = input.readLine();
-			playerCount = Integer.parseInt(text);
+		
+		boolean playerCountChoosen = true;
+		while(playerCountChoosen ){
+			try {
+				System.out.println("How Many Players?");
+				System.out.print("> ");
+				String text = input.readLine();
+				playerCount = Integer.parseInt(text);
+				playerCountChoosen = false;
 
-		} catch(IOException e) {
-			System.err.println("I/O Error - " + e.getMessage());
+			} catch(IOException e) {
+				System.err.println("I/O Error - " + e.getMessage());
+			} catch(NumberFormatException e){
+				System.out.println("Not a valid Entry");
+				playerCountChoosen = true;
+			}
 		}
-		System.out.println(playerCount);
 		for(int i=0; i<playerCount; i++)playerList.add(new Player());
 
 		dealCards();
@@ -129,53 +135,74 @@ public class Game {
 			i=i+2;
 		}
 	}
-
+	
+	
+	//The list of choices that are used in the turn method.
+	List<String> choicesList = new ArrayList<String>(){{
+		add("Roll Dice");
+		add("Make a suggestion");
+		add("Make an accusation");
+		add("See hand");
+		add("End Turn");
+	}};
+	/**
+	 * The Main turn method, from here the decisions are made and the game is run.
+	 */
 	private void turn() {
-		Player currentPlayer = playerList.get(currentPlayerIndex);
-		int turnChoice = 0;
-
-		board.drawBoard(playerList);
-
+		String turnChoice = "";
+		
+		//board.drawBoard(playerList);
+		String textInput = "";
 		try {
 			System.out.println();
 			System.out.println("It is Player "+(currentPlayerIndex+1)+"'s turn");
 			System.out.println("What would you like to do?");
-			System.out.println("1. Roll Dice");
-			System.out.println("2. Make a suggestion");
-			System.out.println("3. Make an accusation");
-			System.out.println("4. See hand");
-			System.out.println("5. End Turn");
+			for(int i=0; i<choicesList.size(); i++){
+				System.out.println((i+1)+". "+choicesList.get(i));
+			}
 			System.out.print("> ");
-			String text = input.readLine();
-			turnChoice = Integer.parseInt(text);
+			textInput = input.readLine();
+			turnChoice = choicesList.remove(Integer.parseInt(textInput)-1);
 
-		} catch(IOException e) {
-			System.err.println("I/O Error - " + e.getMessage());
+		} catch(NumberFormatException e) {
+			turnChoice = "";
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		if(turnChoice == 1 && !rolledDice){
+		if(turnChoice.equals("Roll Dice") && !rolledDice){			
 			move();
-		}else if(turnChoice == 1 && rolledDice){
+		}else if(turnChoice.equals("Roll Dice") && rolledDice){
 			System.out.println("You have already rolled, choose again");
-			turn();
-		}else if(turnChoice == 2 && !suggestionMade){
+		}else if(turnChoice.equals("Make a suggestion") && !suggestionMade){
 			suggestion();
-		}else if(turnChoice == 2 && suggestionMade){
+		}else if(turnChoice.equals("Make a suggestion") && suggestionMade){
 			System.out.println("You have already made a suggestion, choose again");
-			turn();
-		}else if(turnChoice ==3){
+		}else if(turnChoice.equals("Make an accusation")){
 			accusation();
-		}else if(turnChoice == 4){
+		}else if(turnChoice.equals("See hand")){
 			System.out.println("This is your hand");
 			showHand();
-		}else if(turnChoice == 5){
+		}else if(turnChoice.equals("End Turn")){
 			System.out.println("End of Player "+(currentPlayerIndex+1)+"'s turn");
 			currentPlayerIndex++;
 			if(currentPlayerIndex == playerList.size())currentPlayerIndex = 0;
+			resetChoicesList();
 			rolledDice = false;
 			suggestionMade = false;
-			turn();
+		}else{
+			System.out.println("Not a valid entry");
 		}
+		turn();
+	}
 
+	private void resetChoicesList() {
+		choicesList = new ArrayList<String>(){{
+			add("Roll Dice");
+			add("Make a suggestion");
+			add("Make an accusation");
+			add("See hand");
+			add("End Turn");
+		}};	
 	}
 
 	private void move() {
@@ -206,7 +233,7 @@ public class Game {
 				validMove = playerList.get(currentPlayerIndex).move(direction);
 			}
 			if(validMove){
-				board.drawBoard(playerList);
+				//board.drawBoard(playerList);
 				i++;
 			}else{
 				System.out.println("Not a valid move");
@@ -277,7 +304,6 @@ public class Game {
 			System.out.println("Your suggestion was not countered by any players");
 		}
 		suggestionMade = true;
-		turn();
 	}
 
 	private void accusation() {
