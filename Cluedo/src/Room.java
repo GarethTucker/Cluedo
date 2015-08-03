@@ -13,7 +13,7 @@ public class Room implements Card {
 	public boolean equals(Object o){
 		if(!(o instanceof Room))return false;
 		Room r = (Room) o;
-		return r.toString().equals(name);
+		return r.toString().equalsIgnoreCase(name);
 	}
 	
 	public int hashCode(){

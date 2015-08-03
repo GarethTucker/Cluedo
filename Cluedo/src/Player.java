@@ -1,3 +1,4 @@
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -6,6 +7,11 @@ public class Player {
 	private int Xpos = 0;
 	private int Ypos = 0;
 	private List<Card> hand = new ArrayList<>();
+	private String name;
+	
+	public Player(String n){
+		this.setName(n);
+	}
 
 	public boolean holding(Card card) {
 		for(Card c: hand){
@@ -52,12 +58,24 @@ public class Player {
 		}
 	}
 	public void addCard(Card c) {
-		hand.add(c);		
+		hand.add(c);
 	}
 	public int getX() {
 		return Xpos;
 	}
 	public int getY() {
 		return Ypos;
+	}
+	public void updatePosition(Point newPoint) {
+		Xpos = (int) newPoint.getX();
+		Ypos = (int) newPoint.getY();
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }
